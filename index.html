@@ -45,7 +45,9 @@ body { font-family: 'Sora', system-ui, sans-serif; color: var(--ink); }
 .btn:hover::after { transform: translateX(120%); transition: transform 0.8s ease; }
 .btn .arrow { display: inline-block; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .btn:hover .arrow { transform: translateX(5px); }
-.ripple { position: absolute; border-radius: 9999px; background: rgba(255,255,255,0.45); transform: scale(0); animation: ripple 0.6s ease-out forwards; pointer-events: none; }
+.ripple { position: absolute; border-radius: 9999px; background: rgba(255,255,255,0.6); transform: scale(0); animation: ripple 0.6s ease-out forwards; pointer-events: none; }
+.btn.pop { animation: pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(0.92); } 70% { transform: scale(1.06); } 100% { transform: scale(1); } }
 @keyframes ripple { to { transform: scale(2.6); opacity: 0; } }
 /* Responsive & webview */
 html, body { max-width: 100%; overflow-x: clip; }
@@ -87,14 +89,52 @@ html, body { max-width: 100%; overflow-x: clip; }
 .fit-cert { width: 320px; height: 220px; max-width: 100%; object-fit: contain; display: block; }
 .fit-profile { width: 320px; height: 400px; max-width: 100%; object-fit: cover; display: block; margin: 0 auto; }
 .fit-exprive { width: 340px; height: 260px; max-width: 100%; object-fit: cover; display: block; }
+/* Zoom on click */
+.fit-cert, .fit-profile, .fit-exprive, #about-photo img { cursor: zoom-in; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.fit-cert:hover, .fit-profile:hover, .fit-exprive:hover, #about-photo img:hover { transform: scale(1.02); }
+#zoom-modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(11,37,69,0.85); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+#zoom-modal.open { opacity: 1; pointer-events: auto; }
+#zoom-modal img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 16px; box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6); transform: scale(0.4); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+#zoom-modal.open img { transform: scale(1); }
+#zoom-close { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-size: 22px; cursor: pointer; }
+#zoom-close:hover { background: rgba(255,255,255,0.25); }
+.brand-cursor { animation: caret-blink 1s steps(2) infinite; }
+/* VS Code-style code pop */
+.vs-line { display: block; white-space: pre; transform-origin: left center; opacity: 0; }
+.on .vs-line { animation: code-pop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: calc(var(--i) * 0.5s); }
+@keyframes code-pop { 0% { opacity: 0; transform: scale(2.6); } 60% { opacity: 1; transform: scale(0.96); } 100% { opacity: 1; transform: scale(1); } }
+.kw { color: #569cd6; } .op { color: #d4d4d4; } .num { color: #b5cea8; } .str { color: #ce9178; }
+/* Research animation above the name */
+.ra-flow { stroke-dasharray: 6 6; animation: ra-flow 1.2s linear infinite; }
+@keyframes ra-flow { to { stroke-dashoffset: -24; } }
+.ra-rung { animation: ra-rung 2s ease-in-out infinite; }
+@keyframes ra-rung { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.ra-dot { animation: ra-dot 3s linear infinite; }
+@keyframes ra-dot { 0% { transform: translateX(0); } 100% { transform: translateX(160px); } }
+@media (prefers-reduced-motion: reduce) { .ra-flow, .ra-rung, .ra-dot { animation: none; } }
 </style>
 
 <div id="bg-layer" class="fixed inset-0 -z-10 transition-colors duration-[1200ms] ease-in-out" style="background-color:#87CEEB" aria-hidden="true"></div>
 <div id="flutter" class="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true"></div>
 
+<!-- Profile banner (front of page) -->
+<div class="mx-auto max-w-6xl px-4 pt-6 text-center sm:px-6">
+  <img class="mx-auto w-full max-w-4xl rounded-2xl" src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,50:1a1f35,100:0f3460&height=200&section=header&text=Sadik%20Bhattarai&fontSize=52&fontColor=58a6ff&fontAlignY=38&desc=Computational%20Bioinformatics%20%7C%20AI%20Engineer%20%7C%20PhD%20Scholar&descSize=16&descAlignY=60&descColor=8b949e&animation=fadeIn" alt="Sadik Bhattarai banner">
+  <a href="https://git.io/typing-svg" class="mt-4 inline-block">
+    <img class="mx-auto" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=600&lines=Cancer+%26+Anticancer+Peptide+Researcher;Neural+Network+Architect;Bioinformatics+AI+Engineer;Lifelong+Learner+%26+Explorer" alt="Typing SVG">
+  </a>
+  <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+    <img src="https://komarev.com/ghpvc/?username=Sadik90&color=58a6ff&style=flat-square&label=Profile+Views" alt="Profile Views">
+    <a href="https://www.linkedin.com/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    <a href="https://www.instagram.com/protein_engineer/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram"></a>
+    <a href="https://podcasters.spotify.com/pod/show/sadik-bhattarai/"><img src="https://img.shields.io/badge/Podcast-1DB954?style=flat-square&logo=spotify&logoColor=white" alt="Spotify Podcast"></a>
+    <a href="https://www.youtube.com/@peace4735/videos/"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="YouTube"></a>
+  </div>
+</div>
+
 <header class="sticky top-0 z-50 border-b border-navy/10 bg-white/75 backdrop-blur-xl">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-    <a href="#hero" class="font-serif text-2xl font-semibold text-navy">Sadik <span class="text-ocean">B.</span></a>
+    <a href="#hero" id="brand" aria-label="Sadik Bhattarai, Researcher from Nepal" class="flex flex-col whitespace-nowrap"><span class="font-serif text-xl font-semibold leading-tight text-navy sm:text-2xl"><span id="brand-text"></span><span class="brand-cursor text-ocean">|</span></span><span class="font-mono text-[10px] uppercase tracking-widest text-ocean">Researcher from Nepal</span></a>
     <button id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" class="btn rounded-full border border-navy/15 bg-white/60 px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-navy md:hidden">Menu</button>
     <nav id="site-nav" aria-label="Main navigation" class="hidden w-full md:block md:w-auto">
       <ul id="nav-links" class="flex flex-col gap-4 py-4 font-mono text-xs uppercase tracking-[0.14em] text-navy/70 md:flex-row md:gap-x-5 md:py-0 md:text-[11px]">
@@ -427,26 +467,26 @@ const DATA = {
   // (external image links are blocked on this page). category: research, content, or oral.
   // Blank issuer/year are hidden. Entries marked draft still need your real details.
   awards: [
-    { title: "Jeonbuk Presidential Research Excellence Award", category: "research", featured: true, issuer: "Jeonbuk National University, Jeonju, South Korea", year: "2026", image: "research_excellence.jpg"},
-    { title: "Honorary Ambassador", category: "content", issuer: "", year: "", image: "honorary_ambassador.jpg"},
-    { title: "Jeonju Friends Content Creator", category: "content", issuer: "", year: "", image: "jeonju_friends.jpg"},
-    { title: "K-Influencer", category: "content", issuer: "", year: "", image: "k_influencer.jpg"},
-    { title: "Jinan Ambassador", category: "content", issuer: "", year: "", image: "jinan_ambassador.jpg"},
-    { title: "Jeonju Olympic", category: "content", issuer: "", year: "", image: "jeonju_olympic.jpg"},
-    { title: "JBCIA Foreign Student Leader", category: "content", issuer: "", year: "", image: "jbcia.jpg"},
-    { title: "Jeonbuk State University Ambassador", category: "content", issuer: "", year: "", image: "jeonbuk_state.jpg"},
-    { title: "Jeonbuk National University", category: "content", issuer: "", year: "", image: "jeonbuk_university.jpg"},
+    { title: "Jeonbuk Presidential Research Excellence Award", category: "research", featured: true, issuer: "Jeonbuk National University, Jeonju, South Korea", year: "2026", image: "research_excellence.jpg" },
+    { title: "Honorary Ambassador", category: "content", issuer: "", year: "", image: "honorary_ambassador.jpg" },
+    { title: "Jeonju Friends Content Creator", category: "content", issuer: "", year: "", image: "jeonju_friends.jpg" },
+    { title: "K-Influencer", category: "content", issuer: "", year: "", image: "k_influencer.jpg" },
+    { title: "Jinan Ambassador", category: "content", issuer: "", year: "", image: "jinan_ambassador.jpg" },
+    { title: "Jeonju Olympic", category: "content", issuer: "", year: "", image: "jeonju_olympic.jpg" },
+    { title: "JBCIA Foreign Student Leader", category: "content", issuer: "", year: "", image: "jbcia.jpg" },
+    { title: "Jeonbuk State University Ambassador", category: "content", issuer: "", year: "", image: "jeonbuk_state.jpg" },
+    { title: "Jeonbuk National University", category: "content", issuer: "", year: "", image: "jeonbuk_university.jpg" },
     { title: "KOREZ", category: "content", issuer: "", year: "", image: "korez.jpg" },
-    { title: "Miscellaneous Certificate", category: "content", issuer: "", year: "", image: "miscelenous.jpg"},
-    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter.jpg"},
-    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter02.jpg"}
+    { title: "Miscellaneous Certificate", category: "content", issuer: "", year: "", image: "miscelenous.jpg" },
+    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter.jpg" },
+    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter02.jpg" }
   ],
 
   contact: {
     email: "sadik@jbnu.ac.kr",
     intro: "Whether you're interested in research collaboration, content partnerships, speaking invitations, or just want to say hello, my inbox is open.",
     links: [
-      { icon: "⌥", label: "github.com/sadikbhattarai", href: "https://github.com/sadikbhattarai" },
+      { icon: "⌥", label: "github.com/Sadik90", href: "https://github.com/Sadik90" },
       { icon: "in", label: "linkedin.com/in/sadikbhattarai", href: "https://www.linkedin.com/in/sadikbhattarai" },
       { icon: "📍", label: "Jeonju, South Korea" }
     ]
@@ -491,13 +531,23 @@ function renderHero() {
         </figure>
       </div>
       <p class="mb-4 font-mono text-xs uppercase tracking-[0.2em] accent">${esc(d.hero.eyebrow)}</p>
-      <h1 class="font-serif text-6xl font-light leading-[0.92] ink md:text-8xl">${esc(d.firstName)}<br><em class="accent">${esc(d.lastName)}</em></h1>
+      <div class="mb-4 flex items-center gap-4" aria-hidden="true">
+        <svg viewBox="0 0 160 80" class="h-14 w-40 overflow-visible md:h-16 md:w-48">
+          <path d="M0 20 Q20 0 40 20 T80 20 T120 20 T160 20" fill="none" stroke="#0B5C94" stroke-width="3" class="ra-flow"/>
+          <path d="M0 60 Q20 80 40 60 T80 60 T120 60 T160 60" fill="none" stroke="#2F9E7A" stroke-width="3" class="ra-flow"/>
+          ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<line class="ra-rung" style="animation-delay:${(i * 0.25).toFixed(2)}s" x1="${10 + i * 20}" y1="24" x2="${10 + i * 20}" y2="56" stroke="#0B2545" stroke-opacity=".5" stroke-width="2"/>`).join("")}
+          <circle class="ra-dot" cx="0" cy="20" r="4" fill="#FF7043"/>
+          <circle class="ra-dot" cx="0" cy="60" r="4" fill="#FF9F43" style="animation-delay:-1.5s"/>
+        </svg>
+        <span class="font-mono text-[11px] uppercase tracking-widest muted">Research in progress</span>
+      </div>
+      <h1class="font-serif text-6xl font-light leading-[0.92] ink md:text-8xl">${esc(d.firstName)}<br><em class="accent">${esc(d.lastName)}</em></h1>
       <p class="mt-8 max-w-xl text-lg leading-relaxed muted">${d.hero.tagline.replace(/<strong>/g, '<strong class="ink font-medium">')}</p>
       <div class="mt-6 flex flex-wrap gap-2">${d.hero.badges.map((b) => `<span class="rounded-full border line bg-white/50 px-3 py-1 font-mono text-[11px] ink">${esc(b.text)}</span>`).join("")}</div>
       <div class="mt-8 flex flex-wrap gap-3">
         <a class="btn rounded-full bg-navy px-6 py-3 text-sm font-medium text-white hover:bg-ocean" href="#publications">View Research <span class="arrow">↓</span></a>
         <a class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50" href="#contact">Get in Touch</a>
-        <a class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50" href="sadik_cv.pdf" target="_blank" rel="noopener">View CV ↗</a>
+        <a class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50" href="Sadik_CV.pdf" target="_blank" rel="noopener">View CV ↗</a>
       </div>
     </div>
 `;
@@ -851,9 +901,9 @@ const STAGE_SCENES = [
   { id: "code", label: "Coding" },
   { id: "ml", label: "Machine learning" },
   { id: "math", label: "Mathematical modelling" },
-  { id: "dock", label: "Molecular docking" },
   { id: "md", label: "MD simulation" },
-  { id: "lab", label: "Wet lab" }
+  { id: "lab", label: "Wet lab" },
+  { id: "finale", label: "Science" }
 ];
 const CODE_LINES = [
   "import torch",
@@ -888,7 +938,24 @@ function buildStage() {
   const edges = nodes.slice(0, 3).flatMap((a) => nodes.slice(3, 7).map((b) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#0B5C94" stroke-opacity=".3"/>`)).join("");
 
   const scenes = {
-    code: `<pre id="code-out" class="whitespace-pre-wrap font-mono text-[12px] leading-relaxed ink"></pre><span class="caret inline-block h-3 w-1.5 bg-ocean align-middle"></span>`,
+    code: `<div class="flex h-full w-full flex-col overflow-hidden rounded-xl bg-[#1e1e1e] text-left font-mono text-[12px] leading-relaxed text-[#d4d4d4] shadow-inner">
+             <div class="flex items-center gap-1.5 border-b border-white/10 bg-[#252526] px-3 py-2">
+               <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f56]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#27c93f]"></span>
+               <span class="ml-3 text-[11px] text-white/70">train.py</span>
+             </div>
+             <div class="flex flex-1 gap-3 px-3 py-3 text-[#858585]">
+               <div class="select-none text-right">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<div>${n}</div>`).join("")}</div>
+               <div class="min-w-0 flex-1">
+                 <span class="vs-line" style="--i:0"><span class="kw">import</span> torch</span>
+                 <span class="vs-line" style="--i:1">model <span class="op">=</span> PeptideNet(dim=<span class="num">128</span>)</span>
+                 <span class="vs-line" style="--i:2"><span class="kw">for</span> epoch <span class="kw">in</span> range(<span class="num">50</span>):</span>
+                 <span class="vs-line" style="--i:3">    loss <span class="op">=</span> criterion(model(x), y)</span>
+                 <span class="vs-line" style="--i:4">    loss.backward()</span>
+                 <span class="vs-line" style="--i:5">    optimizer.step()</span>
+                 <span class="vs-line" style="--i:6"><span class="kw">print</span>(<span class="str">"done"</span>)</span>
+               </div>
+             </div>
+           </div>`,
     ml: `<svg viewBox="0 0 300 150" class="h-full w-full" aria-hidden="true">
            <line x1="5" y1="140" x2="295" y2="140" stroke="#0B2545" stroke-opacity=".2"/>
            <polyline id="loss-line" fill="none" stroke="#0B5C94" stroke-width="3" stroke-linejoin="round" points=""/>
@@ -904,12 +971,10 @@ function buildStage() {
              <p class="f f2">θ ← θ − η ∇L(θ)</p>
              <p class="f f3">∫ p(x) dx = 1</p>
            </div>`,
-    dock: `<svg viewBox="0 0 300 150" class="h-full w-full" aria-hidden="true">
-             <circle cx="150" cy="80" r="58" fill="#0B5C94" fill-opacity=".85"/>
-             <circle cx="200" cy="80" r="18" fill="#0B2545"/>
-             <circle class="ligand" cx="200" cy="80" r="8" fill="#FF9F43"/>
-           </svg>
-           <p class="absolute left-6 top-4 font-mono text-[11px] muted">binding energy: <span id="score" class="accent">0.0</span> kcal/mol</p>`,
+    finale: `<div class="flex h-full w-full flex-col items-center justify-center text-center">
+           <p class="font-serif text-4xl font-light ink sm:text-5xl">Science <em class="accent">Open to All</em> <span class="accent">!!</span></p>
+           <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.25em] muted">Sadik Bhattarai · Researcher from Nepal</p>
+         </div>`,
     md: `<canvas id="md-canvas" width="300" height="150" class="h-full w-full" aria-hidden="true"></canvas>`,
     lab: `<svg viewBox="0 0 300 150" class="h-full w-full" aria-hidden="true">
             <circle class="drop" cx="150" cy="8" r="4" fill="#0B5C94"/>
@@ -950,18 +1015,6 @@ let stageIdx = 0;
 let stageRun = 0;
 let stageTimer = null;
 
-async function typeCode(rid) {
-  const out = $("#code-out");
-  out.textContent = "";
-  for (const line of CODE_LINES) {
-    for (const ch of line + "\n") {
-      if (rid !== stageRun) return;
-      out.textContent += ch;
-      await sleep(26);
-    }
-    await sleep(160);
-  }
-}
 
 async function runLoss(rid) {
   const line = $("#loss-line");
@@ -977,14 +1030,6 @@ async function runLoss(rid) {
   }
 }
 
-async function runDockScore(rid) {
-  const score = $("#score");
-  for (let step = 0; step <= 40; step++) {
-    if (rid !== stageRun) return;
-    score.textContent = (-9.2 * step / 40).toFixed(1);
-    await sleep(80);
-  }
-}
 
 function runMD(rid) {
   const canvas = $("#md-canvas");
@@ -1022,9 +1067,7 @@ function runMD(rid) {
 }
 
 const STAGE_STARTERS = {
-  code: typeCode,
   ml: runLoss,
-  dock: runDockScore,
   md: runMD
 };
 
@@ -1064,4 +1107,75 @@ renderRoles();
 renderAwards();
 renderContact();
 setActiveNav();
+</script>
+
+<!-- Zoom modal -->
+<div id="zoom-modal" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button id="zoom-close" type="button" aria-label="Close preview">×</button>
+  <img id="zoom-img" src="" alt="">
+</div>
+
+<script>
+/* Typing name animation in the header */
+(function () {
+  const el = document.getElementById("brand-text");
+  if (!el) return;
+  const NAME = "Sadik Bhattarai";
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    el.textContent = NAME;
+    return;
+  }
+  let i = 0, deleting = false;
+  function tick() {
+    if (!deleting) {
+      i++;
+      el.textContent = NAME.slice(0, i);
+      if (i === NAME.length) { deleting = true; return setTimeout(tick, 2000); }
+      return setTimeout(tick, 120);
+    }
+    i--;
+    el.textContent = NAME.slice(0, i);
+    if (i === 0) { deleting = false; return setTimeout(tick, 600); }
+    setTimeout(tick, 60);
+  }
+  tick();
+})();
+
+/* Click-to-zoom preview for certificate, profile and Exprive images */
+(function () {
+  const modal = document.getElementById("zoom-modal");
+  const big = document.getElementById("zoom-img");
+  const closeBtn = document.getElementById("zoom-close");
+  const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, #about-photo img";
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  document.addEventListener("click", (e) => {
+    const img = e.target.closest(SEL);
+    if (!img) return;
+    e.preventDefault();
+    open(img.currentSrc || img.src, img.alt);
+  });
+  modal.addEventListener("click", (e) => { if (e.target !== big) close(); });
+  closeBtn.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();
+
+/* Animated click feedback on buttons */
+document.addEventListener("pointerdown", (e) => {
+  const b = e.target.closest(".btn");
+  if (!b) return;
+  b.classList.remove("pop");
+  void b.offsetWidth;
+  b.classList.add("pop");
+  b.addEventListener("animationend", () => b.classList.remove("pop"), { once: true });
+});
 </script>
