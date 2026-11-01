@@ -33,7 +33,7 @@ body { font-family: 'Sora', system-ui, sans-serif; color: var(--ink); }
 @keyframes fly { 0% { transform: translateX(-200px); opacity: 0; } 8%, 92% { opacity: 1; } 100% { transform: translateX(calc(100vw + 200px)); opacity: 0; } }
 .bf-bob { animation: bob 2.4s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
-.bf-tex { display: inline-block; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: calc(14px * var(--s, 1)); white-space: nowrap; color: var(--accent); opacity: .55; text-shadow: 0 2px 6px rgba(11,37,69,.12); }
+.bf-tex { display: inline-block; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: calc(14px * var(--s, 1)); white-space: nowrap; color: var(--c, var(--accent)); opacity: .8; text-shadow: 0 0 1px rgba(255,255,255,.7), 0 2px 6px rgba(11,37,69,.2); }
 .bf-tex.serif { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: calc(22px * var(--s, 1)); }
 @media (prefers-reduced-motion: reduce) { #flutter { display: none; } .bf, .bf-bob { animation: none; } }
 /* Button feel */
@@ -806,8 +806,9 @@ const FLOATERS = [
   { text: "π ≈ 3.14159", y: "28vh", dur: "36s", delay: "-27s", s: 0.9 },
   { text: "Σ αᵢ = 1", y: "52vh", dur: "23s", delay: "-30s", s: 0.9 }
 ];
-$("#flutter").innerHTML = FLOATERS.map((f) =>
-  `<div class="bf" style="top:${f.y};animation-duration:${f.dur};animation-delay:${f.delay};--s:${f.s}"><div class="bf-bob"><span class="bf-tex${f.serif ? " serif" : ""}">${esc(f.text)}</span></div></div>`).join("");
+const FLOAT_COLORS = ["#E0592A", "#7C3AED", "#059669", "#C026D3", "#B7860B", "#1D6FB8", "#DB2777", "#0D9488"];
+$("#flutter").innerHTML = FLOATERS.map((f, i) =>
+  `<div class="bf" style="top:${f.y};animation-duration:${f.dur};animation-delay:${f.delay};--s:${f.s};--c:${FLOAT_COLORS[i % FLOAT_COLORS.length]}"><div class="bf-bob"><span class="bf-tex${f.serif ? " serif" : ""}">${esc(f.text)}</span></div></div>`).join("");
 
 /* ============================================================
    INTERACTIONS
