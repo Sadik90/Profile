@@ -28,15 +28,14 @@ tailwind.config = {
 .panel { background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(8px); }
 html { scroll-behavior: smooth; }
 body { font-family: 'Sora', system-ui, sans-serif; color: var(--ink); }
-/* Butterflies */
+/* Floating equations, numbers and labels (replaces the butterflies) */
 .bf { position: absolute; left: 0; animation-name: fly; animation-timing-function: linear; animation-iteration-count: infinite; }
-@keyframes fly { 0% { transform: translateX(-140px) scale(1.8); opacity: 0.95; } 100% { transform: translateX(calc(100vw + 140px)) scale(0.25); opacity: 0.5; } }
+@keyframes fly { 0% { transform: translateX(-200px); opacity: 0; } 8%, 92% { opacity: 1; } 100% { transform: translateX(calc(100vw + 200px)); opacity: 0; } }
 .bf-bob { animation: bob 2.4s ease-in-out infinite; }
-@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-30px) rotate(6deg); } }
-.bf svg { width: calc(60px * var(--s, 1)); height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15)); }
-.wing { transform-box: view-box; transform-origin: 30px 20px; animation: flap 0.3s ease-in-out infinite alternate; }
-@keyframes flap { to { transform: scaleX(0.12); } }
-@media (prefers-reduced-motion: reduce) { #flutter { display: none; } .bf, .bf-bob, .wing { animation: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+.bf-tex { display: inline-block; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: calc(14px * var(--s, 1)); white-space: nowrap; color: var(--accent); opacity: .55; text-shadow: 0 2px 6px rgba(11,37,69,.12); }
+.bf-tex.serif { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: calc(22px * var(--s, 1)); }
+@media (prefers-reduced-motion: reduce) { #flutter { display: none; } .bf, .bf-bob { animation: none; } }
 /* Button feel */
 .btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; will-change: transform; cursor: pointer; }
 .btn:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -10px rgba(11, 37, 69, 0.45); }
@@ -51,7 +50,6 @@ body { font-family: 'Sora', system-ui, sans-serif; color: var(--ink); }
 @keyframes ripple { to { transform: scale(2.6); opacity: 0; } }
 /* Responsive & webview */
 html, body { max-width: 100%; overflow-x: clip; }
-@media (max-width: 480px) { .bf svg { width: calc(44px * var(--s, 1)); } }
 /* Eye blink on section headings */
 .eye { display: inline-block; width: 0.95em; height: 0.6em; margin-left: 0.5em; vertical-align: middle; color: var(--accent); }
 .eye svg { width: 100%; height: 100%; display: block; overflow: visible; transform-origin: 50% 50%; }
@@ -89,6 +87,9 @@ html, body { max-width: 100%; overflow-x: clip; }
 .fit-cert { width: 320px; height: 220px; max-width: 100%; object-fit: contain; display: block; }
 .fit-profile { width: 320px; height: 400px; max-width: 100%; object-fit: cover; display: block; margin: 0 auto; }
 .fit-exprive { width: 340px; height: 260px; max-width: 100%; object-fit: cover; display: block; }
+/* Scans saved sideways: rotated upright inside the same frame */
+.fit-cert.rot90 { width: 220px; height: 320px; margin: -50px auto; transform: rotate(var(--rot, 90deg)); }
+.fit-cert.rot90:hover { transform: rotate(var(--rot, 90deg)) scale(1.02); }
 /* Zoom on click */
 .fit-cert, .fit-profile, .fit-exprive, #about-photo img { cursor: zoom-in; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .fit-cert:hover, .fit-profile:hover, .fit-exprive:hover, #about-photo img:hover { transform: scale(1.02); }
@@ -98,6 +99,10 @@ html, body { max-width: 100%; overflow-x: clip; }
 #zoom-modal.open img { transform: scale(1); }
 #zoom-close { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-size: 22px; cursor: pointer; }
 #zoom-close:hover { background: rgba(255,255,255,0.25); }
+#zoom-img.zrot { max-width: 88vh; max-height: 92vw; }
+#zoom-modal.open #zoom-img.zrot { transform: rotate(var(--zrot, 90deg)) scale(1); }
+/* Confidential manuscripts: blurred, not selectable */
+.blur-conf { filter: blur(7px); user-select: none; -webkit-user-select: none; }
 .brand-cursor { animation: caret-blink 1s steps(2) infinite; }
 /* VS Code-style code pop */
 .vs-line { display: block; white-space: pre; transform-origin: left center; opacity: 0; }
@@ -383,11 +388,11 @@ const DATA = {
     { title: "ACP-ADA: a boosting method with data augmentation for improved prediction of anticancer peptides", authors: "Bhattarai, S., et al.", venue: "International Journal of Molecular Sciences, 23(20), 12194", year: 2022, type: "Journal", link: "https://www.mdpi.com/1422-0067/23/20/12194" },
     { title: "AntiCPs-CompML: a comprehensive fast track ML method to predict anti-corona peptides", authors: "Bist, P. S., Bhattarai, S., et al.", venue: "bioRxiv (preprint, under review)", year: 2024, type: "Preprint", link: "https://www.biorxiv.org/content/biorxiv/early/2024/06/29/2024.06.27.601090.full.pdf" },
     { title: "In Silico Computational Method for ACP Classification and Peptide Class Validation Server in Bioinformatics", authors: "Bhattarai, S., et al.", venue: "과학논집 (Dbpia), 48, 31–43", year: 2023, type: "Conference" },
-    { title: "De Novo Design of Pharmacokinetically Optimized Cell Penetrating Anticancer Peptides Targeting the CITED2–p300 Regulatory Interface in Hypoxia-Associated Cancer", authors: "Bhattarai, S., et al.", venue: "Submitted (2026)", year: 2026, type: "Manuscript" },
-    { title: "Semi-Supervised Generative Design of Antimicrobial Peptides for Combating Multidrug-Resistant Pathogens", authors: "Bhattarai, S., et al.", venue: "Submitted (2026)", year: 2026, type: "Manuscript" },
-    { title: "Semi-Supervised Generative Design of Protease Resistant Anti-Acne Peptides for Combating Cutibacterium acnes in Acne Vulgaris", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript" },
-    { title: "Design of Multi-Functional Cell Penetrating Anticancer Peptides Using an ESM-2 Feedback Based Model", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript" },
-    { title: "Design of Antimicrobial Peptides against Gram-Positive, Gram-Negative and Anti-Fungal Strains Leveraging a Semi-Supervised Probabilistic Model and Strain-Similarity Screening", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript" }
+    { title: "De Novo Design of Pharmacokinetically Optimized Cell Penetrating Anticancer Peptides Targeting the CITED2–p300 Regulatory Interface in Hypoxia-Associated Cancer", authors: "Bhattarai, S., et al.", venue: "Submitted (2026)", year: 2026, type: "Manuscript", confidential: true },
+    { title: "Semi-Supervised Generative Design of Antimicrobial Peptides for Combating Multidrug-Resistant Pathogens", authors: "Bhattarai, S., et al.", venue: "Submitted (2026)", year: 2026, type: "Manuscript", confidential: true },
+    { title: "Semi-Supervised Generative Design of Protease Resistant Anti-Acne Peptides for Combating Cutibacterium acnes in Acne Vulgaris", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript", confidential: true },
+    { title: "Design of Multi-Functional Cell Penetrating Anticancer Peptides Using an ESM-2 Feedback Based Model", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript", confidential: true },
+    { title: "Design of Antimicrobial Peptides against Gram-Positive, Gram-Negative and Anti-Fungal Strains Leveraging a Semi-Supervised Probabilistic Model and Strain-Similarity Screening", authors: "Bhattarai, S., et al.", venue: "Work in progress (2026)", year: 2026, type: "Manuscript", confidential: true }
   ],
 
   presentations: [
@@ -471,15 +476,15 @@ const DATA = {
     { title: "Honorary Ambassador", category: "content", issuer: "", year: "", image: "honorary_ambassador.jpg" },
     { title: "Jeonju Friends Content Creator", category: "content", issuer: "", year: "", image: "jeonju_friends.jpg" },
     { title: "K-Influencer", category: "content", issuer: "", year: "", image: "k_influencer.jpg" },
-    { title: "Jinan Ambassador", category: "content", issuer: "", year: "", image: "jinan_ambassador.jpg" },
+    { title: "Jinan Ambassador", category: "content", issuer: "", year: "", image: "jinan_ambassador.jpg", rotate: 90 },
     { title: "Jeonju Olympic", category: "content", issuer: "", year: "", image: "jeonju_olympic.jpg" },
     { title: "JBCIA Foreign Student Leader", category: "content", issuer: "", year: "", image: "jbcia.jpg" },
     { title: "Jeonbuk State University Ambassador", category: "content", issuer: "", year: "", image: "jeonbuk_state.jpg" },
-    { title: "Jeonbuk National University", category: "content", issuer: "", year: "", image: "jeonbuk_university.jpg" },
+    { title: "Jeonbuk National University", category: "content", issuer: "", year: "", image: "jeonbuk_university.jpg", rotate: 90 },
     { title: "KOREZ", category: "content", issuer: "", year: "", image: "korez.jpg" },
     { title: "Miscellaneous Certificate", category: "content", issuer: "", year: "", image: "miscelenous.jpg" },
-    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter.jpg" },
-    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter02.jpg" }
+    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter.jpg", rotate: 90 },
+    { title: "Oral Presenter Certificate", category: "oral", issuer: "", year: "", image: "oral_presenter02.jpg", rotate: 90 }
   ],
 
   contact: {
@@ -509,7 +514,7 @@ function heroAward() {
   return `
     <figure class="panel mb-10 max-w-md rounded-3xl p-4 shadow-xl">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl" src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="mt-4 grid gap-1 px-1">
         <strong class="font-serif text-2xl ink">${esc(a.title)}</strong>
@@ -525,10 +530,17 @@ function renderHero() {
     <div>
       <div class="mb-10 flex flex-wrap items-start gap-4">
         ${heroAward().replace('class="panel mb-10 max-w-md rounded-3xl p-4 shadow-xl"', 'class="panel max-w-md flex-1 basis-64 rounded-3xl p-4 shadow-xl"')}
-        <figure class="panel max-w-md flex-1 basis-64 rounded-3xl p-4 shadow-xl">
-          <img class="fit-exprive rounded-2xl" src="exprive.png" alt="Sadik Bhattarai Exprive influencer profile">
-          <figcaption class="mt-4 px-1"><a class="font-mono text-xs uppercase tracking-widest accent hover:underline" href="https://www.exprive.com/@bhattarai.sadik2009" target="_blank" rel="noopener">Exprive profile ↗</a></figcaption>
-        </figure>
+        <aside aria-label="Looking ahead" class="panel flex max-w-md flex-1 basis-64 flex-col justify-between rounded-3xl p-7 shadow-xl">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.2em] accent">Looking ahead</p>
+            <h3 class="mt-4 font-serif text-3xl font-light leading-tight ink">What will be the role of AI in 2036?</h3>
+          </div>
+          <ul class="mt-6 grid gap-3 text-sm ink">
+            <li class="flex items-start gap-3"><span aria-hidden="true" class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ocean"></span>Open science research collaboration</li>
+            <li class="flex items-start gap-3"><span aria-hidden="true" class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ocean"></span>Seeking a Post-Doc position in AI, globally</li>
+          </ul>
+          <a class="btn mt-6 inline-flex w-fit rounded-full bg-navy px-5 py-2.5 text-sm font-medium text-white hover:bg-ocean" href="#contact">Let's talk <span class="arrow">→</span></a>
+        </aside>
       </div>
       <p class="mb-4 font-mono text-xs uppercase tracking-[0.2em] accent">${esc(d.hero.eyebrow)}</p>
       <div class="mb-4 flex items-center gap-4" aria-hidden="true">
@@ -610,6 +622,17 @@ function renderAcademic() {
 /* Publications: filter by type and search text */
 const pubState = { type: "All", q: "" };
 
+function confidentialRow(p) {
+  return `<article class="flex items-start justify-between gap-6 border-b line py-7">
+    <div class="min-w-0">
+      <h3 class="font-serif text-xl leading-snug ink break-words"><span class="blur-conf" role="img" aria-label="Title withheld: confidential manuscript">${esc(p.title)}</span></h3>
+      <p class="mt-2 text-sm muted"><span class="blur-conf">${esc(p.authors)} · ${esc(p.venue)} · ${esc(p.year)}</span></p>
+      <p class="mt-3 font-mono text-[10px] uppercase tracking-widest muted">Confidential</p>
+    </div>
+    <span class="shrink-0 rounded-full bg-ocean/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest accent">${esc(p.type)}</span>
+  </article>`;
+}
+
 function renderPublications() {
   const types = ["All", ...new Set(DATA.publications.map((p) => p.type))];
   $("#pub-filters").innerHTML = types.map((t) =>
@@ -618,12 +641,13 @@ function renderPublications() {
   const q = pubState.q.trim().toLowerCase();
   const list = DATA.publications
     .filter((p) => pubState.type === "All" || p.type === pubState.type)
-    .filter((p) => `${p.title} ${p.venue} ${p.year} ${p.authors}`.toLowerCase().includes(q))
+    .filter((p) => (p.confidential ? `${p.venue} ${p.year}` : `${p.title} ${p.venue} ${p.year} ${p.authors}`).toLowerCase().includes(q))
     .sort((a, b) => b.year - a.year);
 
   $("#pub-count").textContent = `Showing ${list.length} of ${DATA.publications.length}`;
   $("#pub-list").innerHTML = list.length
     ? list.map((p) => {
+        if (p.confidential) return confidentialRow(p);
         const title = p.link
           ? `<a class="underline-offset-4 hover:underline" href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.title)}</a>`
           : esc(p.title);
@@ -721,7 +745,7 @@ function renderAwards() {
   $("#awards-grid").innerHTML = items.map((a) => `
     <figure class="panel grid content-start gap-4 rounded-3xl p-5 ${a.featured ? "md:col-span-3 md:grid-cols-[1.4fr_1fr] md:items-center" : ""}">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl" src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="grid gap-1 px-1">
         <strong class="font-serif ink ${a.featured ? "text-3xl" : "text-xl"}">${esc(a.title)}</strong>
@@ -766,18 +790,24 @@ const bgObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll("[data-theme]").forEach((el) => bgObserver.observe(el));
 
 /* ============================================================
-   BUTTERFLIES: decorative flyers crossing the screen
+   FLOATING EQUATIONS, NUMBERS & LABELS drifting across the screen
    ============================================================ */
-const BUTTERFLY = `<svg viewBox="0 0 60 40" aria-hidden="true"><g class="wing wl"><path d="M28 18C18 2 2 4 4 16C5 22 16 24 28 20Z" fill="#FF9F43"/><path d="M28 22C18 26 8 28 9 34C10 39 22 36 28 26Z" fill="#FFC24B"/><circle cx="12" cy="12" r="2.2" fill="#fff" opacity=".85"/></g><g class="wing wr"><path d="M32 18C42 2 58 4 56 16C55 22 44 24 32 20Z" fill="#FF9F43"/><path d="M32 22C42 26 52 28 51 34C50 39 38 36 32 26Z" fill="#FFC24B"/><circle cx="48" cy="12" r="2.2" fill="#fff" opacity=".85"/></g><rect x="28.6" y="10" width="2.8" height="22" rx="1.4" fill="#0B2545"/></svg>`;
-const FLYERS = [
-  { y: "16vh", dur: "18s", delay: "0s", s: 1 },
-  { y: "38vh", dur: "24s", delay: "-7s", s: 0.8 },
-  { y: "62vh", dur: "21s", delay: "-12s", s: 1.1 },
-  { y: "26vh", dur: "28s", delay: "-17s", s: 0.7 },
-  { y: "78vh", dur: "26s", delay: "-4s", s: 0.9 }
+const FLOATERS = [
+  { text: "Artificial Intelligence", y: "14vh", dur: "26s", delay: "0s", s: 1, serif: true },
+  { text: "E = mc²", y: "34vh", dur: "31s", delay: "-9s", s: 0.9 },
+  { text: "∇L(θ) = 0", y: "58vh", dur: "24s", delay: "-14s", s: 1 },
+  { text: "2036", y: "22vh", dur: "29s", delay: "-19s", s: 1.2 },
+  { text: "Docking", y: "74vh", dur: "27s", delay: "-6s", s: 0.9, serif: true },
+  { text: "P(A|B) = P(B|A)P(A) / P(B)", y: "46vh", dur: "34s", delay: "-22s", s: 0.8 },
+  { text: "Open Science Research", y: "86vh", dur: "30s", delay: "-11s", s: 0.9, serif: true },
+  { text: "y = softmax(Wx + b)", y: "66vh", dur: "25s", delay: "-3s", s: 0.85 },
+  { text: "ΔG = ΔH − TΔS", y: "8vh", dur: "33s", delay: "-16s", s: 0.9 },
+  { text: "0 1 1 0 1 0 0 1", y: "92vh", dur: "28s", delay: "-25s", s: 0.8 },
+  { text: "π ≈ 3.14159", y: "28vh", dur: "36s", delay: "-27s", s: 0.9 },
+  { text: "Σ αᵢ = 1", y: "52vh", dur: "23s", delay: "-30s", s: 0.9 }
 ];
-$("#flutter").innerHTML = FLYERS.map((f) =>
-  `<div class="bf" style="top:${f.y};animation-duration:${f.dur};animation-delay:${f.delay};--s:${f.s}"><div class="bf-bob">${BUTTERFLY}</div></div>`).join("");
+$("#flutter").innerHTML = FLOATERS.map((f) =>
+  `<div class="bf" style="top:${f.y};animation-duration:${f.dur};animation-delay:${f.delay};--s:${f.s}"><div class="bf-bob"><span class="bf-tex${f.serif ? " serif" : ""}">${esc(f.text)}</span></div></div>`).join("");
 
 /* ============================================================
    INTERACTIONS
@@ -893,209 +923,8 @@ const blinkObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: "-40% 0px -40% 0px" });
 headings.forEach((h) => blinkObserver.observe(h));
 
-/* ============================================================
-   LAB STAGE: coding, model training, maths, docking, MD, wet lab
-   Scenes cycle one after another inside the hero.
-   ============================================================ */
-const STAGE_SCENES = [
-  { id: "code", label: "Coding" },
-  { id: "ml", label: "Machine learning" },
-  { id: "math", label: "Mathematical modelling" },
-  { id: "md", label: "MD simulation" },
-  { id: "lab", label: "Wet lab" },
-  { id: "finale", label: "Science" }
-];
-const CODE_LINES = [
-  "import torch",
-  "model = PeptideNet(dim=128)",
-  "for epoch in range(50):",
-  "    loss = criterion(model(x), y)",
-  "    loss.backward()",
-  "    optimizer.step()"
-];
-const STAGE_MS = 5000;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-const RESEARCHER_SVG = `<svg viewBox="0 0 120 230" class="hidden h-56 w-24 shrink-0 sm:block" role="img" aria-label="Researcher observing the lab animation">
-  <path d="M20 230 L24 150 Q60 128 96 150 L100 230 Z" fill="#FFFFFF" stroke="#0B2545" stroke-width="2"/>
-  <path d="M60 150 L60 230" stroke="#0B2545" stroke-opacity=".25" stroke-width="2"/>
-  <path d="M48 140 L60 158 L72 140 Z" fill="#0B5C94"/>
-  <path d="M96 160 Q118 150 116 128" fill="none" stroke="#0B2545" stroke-width="14" stroke-linecap="round"/>
-  <path d="M96 160 Q118 150 116 128" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round"/>
-  <ellipse cx="60" cy="98" rx="22" ry="26" fill="#E8B88E" stroke="#0B2545" stroke-width="2"/>
-  <path d="M37 90 Q38 66 60 66 Q84 66 83 90 Q78 76 60 78 Q44 76 37 90 Z" fill="#1F1F1F"/>
-  <g fill="none" stroke="#0B2545" stroke-width="2"><circle cx="50" cy="98" r="7"/><circle cx="70" cy="98" r="7"/><line x1="57" y1="98" x2="63" y2="98"/></g>
-  <circle class="pupil" cx="50" cy="98" r="3" fill="#0B2545"/>
-  <circle class="pupil" cx="70" cy="98" r="3" fill="#0B2545"/>
-  <rect class="lid" x="42" y="90" width="16" height="8" fill="#E8B88E"/>
-  <rect class="lid" x="62" y="90" width="16" height="8" fill="#E8B88E"/>
-  <path d="M54 114 Q60 118 66 114" fill="none" stroke="#0B2545" stroke-width="2" stroke-linecap="round"/>
-</svg>`;
-
-function buildStage() {
-  const nodes = [[40, 30], [40, 70], [40, 110], [110, 20], [110, 55], [110, 90], [110, 125], [180, 45], [180, 95]];
-  const nodeSvg = nodes.map((n, i) => `<circle class="nd" cx="${n[0]}" cy="${n[1]}" r="7" fill="#0B5C94" style="animation-delay:${(i * 0.15).toFixed(2)}s"/>`).join("");
-  const edges = nodes.slice(0, 3).flatMap((a) => nodes.slice(3, 7).map((b) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#0B5C94" stroke-opacity=".3"/>`)).join("");
-
-  const scenes = {
-    code: `<div class="flex h-full w-full flex-col overflow-hidden rounded-xl bg-[#1e1e1e] text-left font-mono text-[12px] leading-relaxed text-[#d4d4d4] shadow-inner">
-             <div class="flex items-center gap-1.5 border-b border-white/10 bg-[#252526] px-3 py-2">
-               <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f56]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#27c93f]"></span>
-               <span class="ml-3 text-[11px] text-white/70">train.py</span>
-             </div>
-             <div class="flex flex-1 gap-3 px-3 py-3 text-[#858585]">
-               <div class="select-none text-right">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<div>${n}</div>`).join("")}</div>
-               <div class="min-w-0 flex-1">
-                 <span class="vs-line" style="--i:0"><span class="kw">import</span> torch</span>
-                 <span class="vs-line" style="--i:1">model <span class="op">=</span> PeptideNet(dim=<span class="num">128</span>)</span>
-                 <span class="vs-line" style="--i:2"><span class="kw">for</span> epoch <span class="kw">in</span> range(<span class="num">50</span>):</span>
-                 <span class="vs-line" style="--i:3">    loss <span class="op">=</span> criterion(model(x), y)</span>
-                 <span class="vs-line" style="--i:4">    loss.backward()</span>
-                 <span class="vs-line" style="--i:5">    optimizer.step()</span>
-                 <span class="vs-line" style="--i:6"><span class="kw">print</span>(<span class="str">"done"</span>)</span>
-               </div>
-             </div>
-           </div>`,
-    ml: `<svg viewBox="0 0 300 150" class="h-full w-full" aria-hidden="true">
-           <line x1="5" y1="140" x2="295" y2="140" stroke="#0B2545" stroke-opacity=".2"/>
-           <polyline id="loss-line" fill="none" stroke="#0B5C94" stroke-width="3" stroke-linejoin="round" points=""/>
-           <g transform="translate(150,0)">${edges}</g>
-           ${nodeSvg}
-         </svg>
-         <p class="absolute left-6 top-4 font-mono text-[11px] muted">loss: <span id="loss-val">--</span></p>`,
-    math: `<svg viewBox="0 0 300 80" class="h-20 w-full" aria-hidden="true">
-             <path class="wave" d="M5 40 C 40 0, 70 80, 105 40 S 170 0, 205 40 S 270 80, 295 40" fill="none" stroke="#FF7043" stroke-width="3" pathLength="400"/>
-           </svg>
-           <div class="mt-4 grid gap-2 font-serif text-xl ink">
-             <p class="f f1">dx/dt = f(x, t)</p>
-             <p class="f f2">θ ← θ − η ∇L(θ)</p>
-             <p class="f f3">∫ p(x) dx = 1</p>
-           </div>`,
-    finale: `<div class="flex h-full w-full flex-col items-center justify-center text-center">
-           <p class="font-serif text-4xl font-light ink sm:text-5xl">Science <em class="accent">Open to All</em> <span class="accent">!!</span></p>
-           <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.25em] muted">Sadik Bhattarai · Researcher from Nepal</p>
-         </div>`,
-    md: `<canvas id="md-canvas" width="300" height="150" class="h-full w-full" aria-hidden="true"></canvas>`,
-    lab: `<svg viewBox="0 0 300 150" class="h-full w-full" aria-hidden="true">
-            <circle class="drop" cx="150" cy="8" r="4" fill="#0B5C94"/>
-            ${[70, 150, 230].map((x, i) => `
-              <rect x="${x - 18}" y="30" width="36" height="100" rx="18" fill="#ffffff" fill-opacity=".5" stroke="#0B2545" stroke-opacity=".4" stroke-width="2"/>
-              <rect class="liq" x="${x - 15}" y="${70 - i * 8}" width="30" height="58" rx="14" fill="${["#FF7043", "#0B5C94", "#2F9E7A"][i]}" fill-opacity=".85"/>
-              <circle class="bub" cx="${x - 6}" cy="110" r="3" fill="#ffffff" style="animation-delay:${(i * 0.4).toFixed(1)}s"/>
-              <circle class="bub" cx="${x + 5}" cy="118" r="2.5" fill="#ffffff" style="animation-delay:${(i * 0.4 + 0.9).toFixed(1)}s"/>`).join("")}
-          </svg>`
-  };
-
-  const sceneHtml = STAGE_SCENES.map((s) => `
-    <div class="scene absolute inset-0 px-6 pb-16 pt-6" data-scene="${s.id}">${scenes[s.id]}</div>`).join("");
-  const dots = STAGE_SCENES.map((s, i) => `<button type="button" class="dot h-2 w-2 rounded-full bg-navy/20 transition hover:bg-navy/50" data-i="${i}" aria-label="Show ${esc(s.label)}"></button>`).join("");
-
-  $("#hero").insertAdjacentHTML("beforeend", `
-    <div class="flex items-end justify-self-center gap-3">${RESEARCHER_SVG}
-    <div id="lab-stage" class="panel relative h-[340px] w-[min(420px,90vw)] justify-self-center overflow-hidden rounded-3xl">
-      ${sceneHtml}
-      <div class="absolute inset-x-0 bottom-0 flex items-center justify-between border-t line px-5 py-3">
-        <span id="stage-label" class="font-mono text-[11px] uppercase tracking-widest accent"></span>
-        <span id="stage-dots" class="flex gap-1.5">${dots}</span>
-      </div>
-    </div>
-    </div>`);
-
-  $("#stage-dots").addEventListener("click", (e) => {
-    const b = e.target.closest(".dot");
-    if (!b) return;
-    stageIdx = Number(b.dataset.i);
-    activate(stageIdx);
-  });
-
-  startStage();
-}
-
-let stageIdx = 0;
-let stageRun = 0;
-let stageTimer = null;
-
-
-async function runLoss(rid) {
-  const line = $("#loss-line");
-  const val = $("#loss-val");
-  const pts = [];
-  for (let x = 0; x <= 60; x++) {
-    if (rid !== stageRun) return;
-    const y = 18 + 110 * Math.exp(-x / 14) + (Math.random() - 0.5) * 6;
-    pts.push(`${5 + x * 4.7},${y.toFixed(1)}`);
-    line.setAttribute("points", pts.join(" "));
-    val.textContent = ((y - 18) / 110).toFixed(3);
-    await sleep(40);
-  }
-}
-
-
-function runMD(rid) {
-  const canvas = $("#md-canvas");
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  const ps = Array.from({ length: 36 }, () => ({
-    x: Math.random() * W, y: Math.random() * H,
-    vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2
-  }));
-  function frame() {
-    if (rid !== stageRun) return;
-    ctx.clearRect(0, 0, W, H);
-    for (const p of ps) {
-      p.vx += (Math.random() - 0.5) * 0.5;
-      p.vy += (Math.random() - 0.5) * 0.5;
-      p.vx *= 0.97; p.vy *= 0.97;
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 4 || p.x > W - 4) p.vx *= -1;
-      if (p.y < 4 || p.y > H - 4) p.vy *= -1;
-    }
-    for (let i = 0; i < ps.length; i++) {
-      for (let j = i + 1; j < ps.length; j++) {
-        const d = Math.hypot(ps[i].x - ps[j].x, ps[i].y - ps[j].y);
-        if (d < 42) {
-          ctx.strokeStyle = `rgba(11,92,148,${(1 - d / 42) * 0.5})`;
-          ctx.beginPath(); ctx.moveTo(ps[i].x, ps[i].y); ctx.lineTo(ps[j].x, ps[j].y); ctx.stroke();
-        }
-      }
-    }
-    ctx.fillStyle = "#0B5C94";
-    for (const p of ps) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); }
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
-
-const STAGE_STARTERS = {
-  ml: runLoss,
-  md: runMD
-};
-
-function activate(i) {
-  stageRun++;
-  const rid = stageRun;
-  document.querySelectorAll("#lab-stage .scene").forEach((el, j) => el.classList.toggle("on", j === i));
-  document.querySelectorAll("#stage-dots .dot").forEach((el, j) => {
-    el.classList.toggle("bg-navy", j === i);
-    el.classList.toggle("bg-navy/20", j !== i);
-  });
-  $("#stage-label").textContent = STAGE_SCENES[i].label;
-  const starter = STAGE_STARTERS[STAGE_SCENES[i].id];
-  if (starter) starter(rid);
-}
-
-function startStage() {
-  activate(stageIdx);
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  stageTimer = setInterval(() => {
-    stageIdx = (stageIdx + 1) % STAGE_SCENES.length;
-    activate(stageIdx);
-  }, STAGE_MS);
-}
-
 /* Boot */
 renderHero();
-buildStage();
 renderStats();
 renderAboutPhoto();
 renderAcademic();
@@ -1147,8 +976,10 @@ setActiveNav();
   const big = document.getElementById("zoom-img");
   const closeBtn = document.getElementById("zoom-close");
   const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, #about-photo img";
-  function open(src, alt) {
+  function open(src, alt, rot) {
     big.src = src;
+    big.classList.toggle("zrot", !!rot);
+    big.style.setProperty("--zrot", rot || "0deg");
     big.alt = alt || "";
     modal.classList.add("open");
     document.body.style.overflow = "hidden";
@@ -1162,7 +993,7 @@ setActiveNav();
     const img = e.target.closest(SEL);
     if (!img) return;
     e.preventDefault();
-    open(img.currentSrc || img.src, img.alt);
+    open(img.currentSrc || img.src, img.alt, img.dataset.rot);
   });
   modal.addEventListener("click", (e) => { if (e.target !== big) close(); });
   closeBtn.addEventListener("click", close);
