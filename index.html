@@ -88,8 +88,7 @@ html, body { max-width: 100%; overflow-x: clip; }
 .fit-profile { width: 320px; height: 400px; max-width: 100%; object-fit: cover; display: block; margin: 0 auto; }
 .fit-exprive { width: 340px; height: 260px; max-width: 100%; object-fit: cover; display: block; }
 /* Scans saved sideways: rotated upright inside the same frame */
-.fit-cert.rot90 { width: 220px; height: 320px; margin: -50px auto; transform: rotate(var(--rot, 90deg)); }
-.fit-cert.rot90:hover { transform: rotate(var(--rot, 90deg)) scale(1.02); }
+.fit-cert.rot90 { width: 220px; height: 320px; margin: -50px auto; }
 /* Zoom on click */
 .fit-cert, .fit-profile, .fit-exprive, #about-photo img { cursor: zoom-in; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .fit-cert:hover, .fit-profile:hover, .fit-exprive:hover, #about-photo img:hover { transform: scale(1.02); }
@@ -99,8 +98,14 @@ html, body { max-width: 100%; overflow-x: clip; }
 #zoom-modal.open img { transform: scale(1); }
 #zoom-close { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-size: 22px; cursor: pointer; }
 #zoom-close:hover { background: rgba(255,255,255,0.25); }
-#zoom-img.zrot { max-width: 88vh; max-height: 92vw; }
-#zoom-modal.open #zoom-img.zrot { transform: rotate(var(--zrot, 90deg)) scale(1); }
+#zoom-img.zswap { max-width: 88vh; max-height: 92vw; }
+#zoom-modal.open #zoom-img { transform: rotate(var(--zrot, 0deg)) scale(1); }
+#zoom-rotate { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); min-height: 44px; padding: 0 20px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+#zoom-rotate:hover { background: rgba(255,255,255,0.25); }
+#zoom-rotate[hidden] { display: none; }
+/* Certificate rotation (after the hover rules so it wins) */
+.fit-cert[data-rot] { transform: rotate(var(--rot, 0deg)); }
+.fit-cert[data-rot]:hover { transform: rotate(var(--rot, 0deg)) scale(1.02); }
 /* Confidential manuscripts: blurred, not selectable */
 .blur-conf { filter: blur(7px); user-select: none; -webkit-user-select: none; }
 .brand-cursor { animation: caret-blink 1s steps(2) infinite; }
@@ -514,7 +519,7 @@ function heroAward() {
   return `
     <figure class="panel mb-10 max-w-md rounded-3xl p-4 shadow-xl">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}" data-rot="${a.rotate || 0}deg" style="--rot:${a.rotate || 0}deg" src="${a.image}" alt="${esc(a.title)} certificate">`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="mt-4 grid gap-1 px-1">
         <strong class="font-serif text-2xl ink">${esc(a.title)}</strong>
@@ -745,7 +750,7 @@ function renderAwards() {
   $("#awards-grid").innerHTML = items.map((a) => `
     <figure class="panel grid content-start gap-4 rounded-3xl p-5 ${a.featured ? "md:col-span-3 md:grid-cols-[1.4fr_1fr] md:items-center" : ""}">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}" data-rot="${a.rotate || 0}deg" style="--rot:${a.rotate || 0}deg" src="${a.image}" alt="${esc(a.title)} certificate">`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="grid gap-1 px-1">
         <strong class="font-serif ink ${a.featured ? "text-3xl" : "text-xl"}">${esc(a.title)}</strong>
@@ -943,6 +948,7 @@ setActiveNav();
 <div id="zoom-modal" role="dialog" aria-modal="true" aria-label="Image preview">
   <button id="zoom-close" type="button" aria-label="Close preview">×</button>
   <img id="zoom-img" src="" alt="">
+  <button id="zoom-rotate" type="button" aria-label="Rotate image 90 degrees clockwise" hidden>↻ Rotate</button>
 </div>
 
 <script>
@@ -971,17 +977,34 @@ setActiveNav();
   tick();
 })();
 
-/* Click-to-zoom preview for certificate, profile and Exprive images */
+/* Click-to-zoom preview for certificate, profile and Exprive images, with rotation */
 (function () {
   const modal = document.getElementById("zoom-modal");
   const big = document.getElementById("zoom-img");
   const closeBtn = document.getElementById("zoom-close");
+  const rotBtn = document.getElementById("zoom-rotate");
   const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, #about-photo img";
-  function open(src, alt, rot) {
-    big.src = src;
-    big.classList.toggle("zrot", !!rot);
-    big.style.setProperty("--zrot", rot || "0deg");
-    big.alt = alt || "";
+  let current = null;
+  const degOf = (img) => parseInt(img.dataset.rot, 10) || 0;
+
+  // Rotation is stored on the source image, so the certificate card and the zoom stay in sync.
+  function setRot(img, deg) {
+    deg = ((deg % 360) + 360) % 360;
+    img.dataset.rot = deg + "deg";
+    img.style.setProperty("--rot", deg + "deg");
+    img.classList.toggle("rot90", deg % 180 === 90);
+  }
+  function syncZoom() {
+    const deg = degOf(current);
+    big.style.setProperty("--zrot", deg + "deg");
+    big.classList.toggle("zswap", deg % 180 === 90);
+  }
+  function open(img) {
+    current = img;
+    big.src = img.currentSrc || img.src;
+    big.alt = img.alt || "";
+    syncZoom();
+    rotBtn.hidden = !img.classList.contains("fit-cert");
     modal.classList.add("open");
     document.body.style.overflow = "hidden";
     closeBtn.focus();
@@ -990,13 +1013,19 @@ setActiveNav();
     modal.classList.remove("open");
     document.body.style.overflow = "";
   }
+  rotBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!current) return;
+    setRot(current, degOf(current) + 90);
+    syncZoom();
+  });
   document.addEventListener("click", (e) => {
     const img = e.target.closest(SEL);
     if (!img) return;
     e.preventDefault();
-    open(img.currentSrc || img.src, img.alt, img.dataset.rot);
+    open(img);
   });
-  modal.addEventListener("click", (e) => { if (e.target !== big) close(); });
+  modal.addEventListener("click", (e) => { if (e.target !== big && !e.target.closest("#zoom-rotate")) close(); });
   closeBtn.addEventListener("click", close);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 })();
