@@ -88,8 +88,7 @@ html, body { max-width: 100%; overflow-x: clip; }
 .fit-profile { width: 320px; height: 400px; max-width: 100%; object-fit: cover; display: block; margin: 0 auto; }
 .fit-exprive { width: 340px; height: 260px; max-width: 100%; object-fit: cover; display: block; }
 /* Scans saved sideways: rotated upright inside the same frame */
-.fit-cert.rot90 { width: 220px; height: 320px; margin: -50px auto; transform: rotate(var(--rot, 90deg)); }
-.fit-cert.rot90:hover { transform: rotate(var(--rot, 90deg)) scale(1.02); }
+.fit-cert.rot90 { width: 220px; height: 320px; margin: -50px auto; }
 /* Zoom on click */
 .fit-cert, .fit-profile, .fit-exprive, #about-photo img { cursor: zoom-in; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .fit-cert:hover, .fit-profile:hover, .fit-exprive:hover, #about-photo img:hover { transform: scale(1.02); }
@@ -99,8 +98,22 @@ html, body { max-width: 100%; overflow-x: clip; }
 #zoom-modal.open img { transform: scale(1); }
 #zoom-close { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-size: 22px; cursor: pointer; }
 #zoom-close:hover { background: rgba(255,255,255,0.25); }
-#zoom-img.zrot { max-width: 88vh; max-height: 92vw; }
-#zoom-modal.open #zoom-img.zrot { transform: rotate(var(--zrot, 90deg)) scale(1); }
+#zoom-img.zswap { max-width: 88vh; max-height: 92vw; }
+#zoom-modal.open #zoom-img { transform: rotate(var(--zrot, 0deg)) scale(1); }
+#zoom-rotate { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); min-height: 44px; padding: 0 20px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+#zoom-rotate:hover { background: rgba(255,255,255,0.25); }
+#zoom-rotate[hidden] { display: none; }
+#zoom-angle-wrap { position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); width: min(360px, 88vw); display: flex; align-items: center; gap: 12px; color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+#zoom-angle-wrap[hidden] { display: none; }
+#zoom-angle { flex: 1; accent-color: #87CEEB; }
+#zoom-angle-val { width: 3.5em; text-align: right; }
+.rot-wrap { position: relative; height: 260px; overflow: hidden; border-radius: 1rem; }
+.rot-range { accent-color: #0B5C94; }
+.rot-btn { position: absolute; top: 10px; right: 10px; z-index: 2; min-height: 36px; padding: 0 12px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.35); background: rgba(11,37,69,0.85); color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; box-shadow: 0 6px 14px -8px rgba(11,37,69,0.6); transition: background-color 0.2s ease; }
+.rot-btn:hover, .rot-btn:focus-visible { background: var(--accent); }
+/* Certificate rotation (after the hover rules so it wins) */
+.fit-cert[data-rot] { transform: rotate(var(--rot, 0deg)); }
+.fit-cert[data-rot]:hover { transform: rotate(var(--rot, 0deg)) scale(1.02); }
 /* Confidential manuscripts: blurred, not selectable */
 .blur-conf { filter: blur(7px); user-select: none; -webkit-user-select: none; }
 .brand-cursor { animation: caret-blink 1s steps(2) infinite; }
@@ -514,7 +527,7 @@ function heroAward() {
   return `
     <figure class="panel mb-10 max-w-md rounded-3xl p-4 shadow-xl">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}" data-rot="${a.rotate || 0}deg" style="--rot:${a.rotate || 0}deg" src="${a.image}" alt="${esc(a.title)} certificate">`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="mt-4 grid gap-1 px-1">
         <strong class="font-serif text-2xl ink">${esc(a.title)}</strong>
@@ -745,7 +758,15 @@ function renderAwards() {
   $("#awards-grid").innerHTML = items.map((a) => `
     <figure class="panel grid content-start gap-4 rounded-3xl p-5 ${a.featured ? "md:col-span-3 md:grid-cols-[1.4fr_1fr] md:items-center" : ""}">
       ${a.image
-        ? `<img class="fit-cert rounded-2xl${a.rotate ? " rot90" : ""}"${a.rotate ? ` data-rot="${a.rotate}deg" style="--rot:${a.rotate}deg"` : ""} src="${a.image}" alt="${esc(a.title)} certificate">`
+        ? `<div class="rot-wrap">
+            <img class="fit-cert" data-rot="${a.rotate || 0}" src="${a.image}" alt="${esc(a.title)} certificate">
+            <button type="button" class="rot-btn" aria-label="Rotate ${esc(a.title)} 90 degrees">↻ 90°</button>
+          </div>
+          <label class="flex items-center gap-3 text-xs muted">
+            <span class="font-mono uppercase tracking-widest">Rotate</span>
+            <input type="range" class="rot-range flex-1" min="0" max="360" step="1" value="${a.rotate || 0}" aria-label="Rotation angle for ${esc(a.title)}">
+            <span class="rot-val w-12 text-right font-mono">${a.rotate || 0}°</span>
+          </label>`
         : `<div class="line grid aspect-[4/3] place-items-center rounded-2xl border border-dashed p-4 text-center font-mono text-[11px] uppercase tracking-widest muted">Certificate image to be added</div>`}
       <figcaption class="grid gap-1 px-1">
         <strong class="font-serif ink ${a.featured ? "text-3xl" : "text-xl"}">${esc(a.title)}</strong>
@@ -943,6 +964,8 @@ setActiveNav();
 <div id="zoom-modal" role="dialog" aria-modal="true" aria-label="Image preview">
   <button id="zoom-close" type="button" aria-label="Close preview">×</button>
   <img id="zoom-img" src="" alt="">
+  <div id="zoom-angle-wrap" hidden><label for="zoom-angle">Rotate</label><input id="zoom-angle" type="range" min="0" max="360" step="1" value="0" aria-label="Rotation angle"><span id="zoom-angle-val">0°</span></div>
+  <button id="zoom-rotate" type="button" aria-label="Rotate image 90 degrees" hidden>↻ 90°</button>
 </div>
 
 <script>
@@ -971,17 +994,73 @@ setActiveNav();
   tick();
 })();
 
-/* Click-to-zoom preview for certificate, profile and Exprive images */
+/* Click-to-zoom preview, and 0–360° rotation for certificates (cards and viewer stay in sync) */
 (function () {
   const modal = document.getElementById("zoom-modal");
   const big = document.getElementById("zoom-img");
   const closeBtn = document.getElementById("zoom-close");
+  const rotBtn = document.getElementById("zoom-rotate");
+  const angleWrap = document.getElementById("zoom-angle-wrap");
+  const angleInput = document.getElementById("zoom-angle");
+  const angleVal = document.getElementById("zoom-angle-val");
   const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, #about-photo img";
-  function open(src, alt, rot) {
-    big.src = src;
-    big.classList.toggle("zrot", !!rot);
-    big.style.setProperty("--zrot", rot || "0deg");
-    big.alt = alt || "";
+  let current = null;
+
+  const norm = (d) => ((Math.round(d) % 360) + 360) % 360;
+  const degOf = (img) => norm(parseFloat(img.dataset.rot) || 0);
+  const ratioOf = (img) => (img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 4 / 3);
+
+  // Sizes an image (aspect ratio r) to fit a W×H box after rotating it by deg.
+  // In-between angles shrink slightly so no corner is cut off.
+  function fitRotated(el, r, W, H, deg, pre) {
+    const t = (deg * Math.PI) / 180, c = Math.abs(Math.cos(t)), s = Math.abs(Math.sin(t));
+    let cw, ch;
+    if (r > W / H) { cw = W; ch = W / r; } else { ch = H; cw = H * r; }
+    const k = Math.min(1, W / (cw * c + ch * s), H / (cw * s + ch * c));
+    el.style.width = cw + "px";
+    el.style.height = ch + "px";
+    el.style.transform = `${pre} rotate(${deg}deg) scale(${k})`.trim();
+  }
+
+  function applyCard(img) {
+    const wrap = img.parentElement;
+    if (!wrap || !wrap.classList.contains("rot-wrap") || !wrap.clientWidth) return;
+    img.style.position = "absolute";
+    img.style.left = "50%";
+    img.style.top = "50%";
+    fitRotated(img, ratioOf(img), wrap.clientWidth, wrap.clientHeight, degOf(img), "translate(-50%, -50%)");
+  }
+
+  function applyZoom() {
+    if (!current) return;
+    const deg = degOf(current);
+    fitRotated(big, ratioOf(big), window.innerWidth * 0.92, window.innerHeight * 0.84, deg, "");
+    angleInput.value = deg;
+    angleVal.textContent = deg + "°";
+  }
+
+  // Single place that changes a certificate's angle; the card, its slider and the viewer all follow.
+  function setRot(img, deg) {
+    img.dataset.rot = norm(deg);
+    applyCard(img);
+    const fig = img.closest("figure");
+    if (fig) {
+      const range = fig.querySelector(".rot-range");
+      if (range) range.value = degOf(img);
+      const val = fig.querySelector(".rot-val");
+      if (val) val.textContent = degOf(img) + "°";
+    }
+    if (current === img) applyZoom();
+  }
+
+  function open(img) {
+    current = img;
+    const isCard = !!img.closest(".rot-wrap");
+    rotBtn.hidden = !isCard;
+    angleWrap.hidden = !isCard;
+    big.src = img.currentSrc || img.src;
+    big.alt = img.alt || "";
+    applyZoom();
     modal.classList.add("open");
     document.body.style.overflow = "hidden";
     closeBtn.focus();
@@ -990,15 +1069,50 @@ setActiveNav();
     modal.classList.remove("open");
     document.body.style.overflow = "";
   }
+
+  big.addEventListener("load", applyZoom);
+  document.addEventListener("load", (e) => {
+    if (e.target.matches && e.target.matches(".rot-wrap img")) applyCard(e.target);
+  }, true);
+
+  rotBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (current) setRot(current, degOf(current) + 90);
+  });
+  angleInput.addEventListener("input", () => {
+    if (current) setRot(current, +angleInput.value);
+  });
+
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches || !e.target.matches(".rot-range")) return;
+    const card = e.target.closest("figure").querySelector("img.fit-cert");
+    if (card) setRot(card, +e.target.value);
+  });
+
   document.addEventListener("click", (e) => {
+    const rb = e.target.closest(".rot-btn");
+    if (rb) {
+      const card = rb.closest(".rot-wrap").querySelector("img");
+      if (card) setRot(card, degOf(card) + 90);
+      return;
+    }
     const img = e.target.closest(SEL);
     if (!img) return;
     e.preventDefault();
-    open(img.currentSrc || img.src, img.alt, img.dataset.rot);
+    open(img);
   });
-  modal.addEventListener("click", (e) => { if (e.target !== big) close(); });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target !== big && !e.target.closest("#zoom-rotate, #zoom-angle-wrap")) close();
+  });
   closeBtn.addEventListener("click", close);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".rot-wrap img").forEach(applyCard);
+    if (current && modal.classList.contains("open")) applyZoom();
+  });
+  document.querySelectorAll(".rot-wrap img").forEach(applyCard);
 })();
 
 /* Animated click feedback on buttons */
