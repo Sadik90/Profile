@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Sadik Bhattarai Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -130,7 +135,22 @@ html, body { max-width: 100%; overflow-x: clip; }
 .ra-dot { animation: ra-dot 3s linear infinite; }
 @keyframes ra-dot { 0% { transform: translateX(0); } 100% { transform: translateX(160px); } }
 @media (prefers-reduced-motion: reduce) { .ra-flow, .ra-rung, .ra-dot { animation: none; } }
+
+/* Side-by-side attachments with a pop animation every 10s */
+.attach-img { width: 100%; height: 18rem; object-fit: contain; display: block; border-radius: 1rem; cursor: zoom-in; transform-origin: center; animation: attach-pop 10s ease-in-out infinite; transition: box-shadow 0.3s ease; }
+.attach-img:hover { box-shadow: 0 20px 40px -18px rgba(11,37,69,0.45); }
+.attach-img.delay { animation-delay: 0.3s; }
+@keyframes attach-pop {
+  0%   { transform: scale(1); }
+  3%   { transform: scale(0.9); }
+  6%   { transform: scale(1.12); }
+  9%   { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .attach-img { animation: none; } }
 </style>
+</head>
+<body>
 
 <div id="bg-layer" class="fixed inset-0 -z-10 transition-colors duration-[1200ms] ease-in-out" style="background-color:#87CEEB" aria-hidden="true"></div>
 <div id="flutter" class="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true"></div>
@@ -171,6 +191,20 @@ html, body { max-width: 100%; overflow-x: clip; }
 
 <main>
   <section id="hero" data-theme="sky" class="mx-auto grid max-w-6xl items-center gap-14 px-4 pb-24 pt-16 sm:px-6 md:grid-cols-[1fr_auto] md:pt-24"></section>
+
+  <!-- Attachments: business card (left) and Erasmus+ certificate (right) -->
+  <section id="attachments" data-theme="sky" class="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+    <div class="grid gap-6 md:grid-cols-2">
+      <figure class="panel rounded-3xl p-4 shadow-xl">
+        <img class="attach-img" src="business_card.jpg" alt="Sadik Bhattarai business card">
+        <figcaption class="mt-3 px-1 font-mono text-[11px] uppercase tracking-widest muted">Business Card</figcaption>
+      </figure>
+      <figure class="panel rounded-3xl p-4 shadow-xl">
+        <img class="attach-img delay" src="erasmus_certificate.jpg" alt="Erasmus+ Youth Mental Health Ambassadors certificate">
+        <figcaption class="mt-3 px-1 font-mono text-[11px] uppercase tracking-widest muted">Erasmus+ Certificate</figcaption>
+      </figure>
+    </div>
+  </section>
 
   <section id="about" data-theme="white" class="scroll-mt-24 py-16">
     <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-[1fr_auto]">
@@ -332,6 +366,21 @@ html, body { max-width: 100%; overflow-x: clip; }
     <div id="footer-copy" class="font-mono text-xs muted"></div>
   </div>
 </footer>
+
+<!-- CV PIN dialog -->
+<div id="cv-modal" role="dialog" aria-modal="true" aria-labelledby="cv-title" class="fixed inset-0 z-[90] hidden items-center justify-center bg-navy/85 p-4">
+  <form id="cv-form" class="panel w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl" novalidate>
+    <p class="font-mono text-[11px] uppercase tracking-[0.2em] accent">Restricted</p>
+    <h3 id="cv-title" class="mt-3 font-serif text-3xl font-light ink">Enter PIN to view CV</h3>
+    <label for="cv-pin" class="sr-only">PIN</label>
+    <input id="cv-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="PIN" class="mt-6 w-full rounded-xl border line bg-white px-4 py-3 text-center font-mono text-lg tracking-[0.4em] ink focus:border-ocean focus:outline-none focus:ring-2 focus:ring-ocean/30">
+    <p id="cv-error" role="alert" class="mt-3 min-h-5 font-mono text-xs text-red-600"></p>
+    <div class="mt-5 flex gap-3">
+      <button type="submit" class="btn flex-1 rounded-full bg-navy px-5 py-2.5 text-sm font-medium text-white hover:bg-ocean">Unlock</button>
+      <button type="button" id="cv-cancel" class="btn flex-1 rounded-full border border-navy/30 px-5 py-2.5 text-sm font-medium ink hover:bg-white/50">Cancel</button>
+    </div>
+  </form>
+</div>
 
 <script>
 const DATA = {
@@ -566,13 +615,13 @@ function renderHero() {
         </svg>
         <span class="font-mono text-[11px] uppercase tracking-widest muted">Research in progress</span>
       </div>
-      <h1class="font-serif text-6xl font-light leading-[0.92] ink md:text-8xl">${esc(d.firstName)}<br><em class="accent">${esc(d.lastName)}</em></h1>
+      <h1 class="font-serif text-6xl font-light leading-[0.92] ink md:text-8xl">${esc(d.firstName)}<br><em class="accent">${esc(d.lastName)}</em></h1>
       <p class="mt-8 max-w-xl text-lg leading-relaxed muted">${d.hero.tagline.replace(/<strong>/g, '<strong class="ink font-medium">')}</p>
       <div class="mt-6 flex flex-wrap gap-2">${d.hero.badges.map((b) => `<span class="rounded-full border line bg-white/50 px-3 py-1 font-mono text-[11px] ink">${esc(b.text)}</span>`).join("")}</div>
       <div class="mt-8 flex flex-wrap gap-3">
         <a class="btn rounded-full bg-navy px-6 py-3 text-sm font-medium text-white hover:bg-ocean" href="#publications">View Research <span class="arrow">↓</span></a>
         <a class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50" href="#contact">Get in Touch</a>
-        <a class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50" href="Sadik_CV.pdf" target="_blank" rel="noopener">View CV ↗</a>
+        <button type="button" id="cv-btn" class="btn rounded-full border border-navy/30 px-6 py-3 text-sm font-medium ink hover:bg-white/50">View CV ↗</button>
       </div>
     </div>
 `;
@@ -1003,7 +1052,7 @@ setActiveNav();
   const angleWrap = document.getElementById("zoom-angle-wrap");
   const angleInput = document.getElementById("zoom-angle");
   const angleVal = document.getElementById("zoom-angle-val");
-  const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, #about-photo img";
+  const SEL = "img.fit-cert, img.fit-profile, img.fit-exprive, img.attach-img, #about-photo img";
   let current = null;
 
   const norm = (d) => ((Math.round(d) % 360) + 360) % 360;
@@ -1125,3 +1174,50 @@ document.addEventListener("pointerdown", (e) => {
   b.addEventListener("animationend", () => b.classList.remove("pop"), { once: true });
 });
 </script>
+
+<!-- CV viewer restriction: opens Sadik_CV.pdf only with the correct PIN -->
+<script>
+(function () {
+  const CV_PIN = "5292";
+  const CV_URL = "Sadik_CV.pdf";
+  const modal = document.getElementById("cv-modal");
+  const form = document.getElementById("cv-form");
+  const input = document.getElementById("cv-pin");
+  const err = document.getElementById("cv-error");
+
+  function openModal() {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    input.value = "";
+    err.textContent = "";
+    input.focus();
+  }
+  function closeModal() {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("#cv-btn")) openModal();
+  });
+  document.getElementById("cv-cancel").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (input.value.trim() === CV_PIN) {
+      closeModal();
+      window.open(CV_URL, "_blank", "noopener");
+    } else {
+      err.textContent = "Viewer restriction: incorrect PIN. Access denied.";
+      input.value = "";
+      input.focus();
+    }
+  });
+})();
+</script>
+</body>
+</html>
